@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sem 7 Planner</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2447f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#eef2f8;--card:#fff;--ink:#0e1a36;--mute:#5d6882;--line:#d9e0ee;--pri:#2447f5;--on:#fff;--hot:#d62f4b;--hot2:#fde6ea;--ok:#0f9d73;--soft:#e6ecff}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#141b33;--ink:#e8ecf8;--mute:#98a2bf;--line:#263052;--pri:#8fa8ff;--on:#0b1020;--hot:#ff6b81;--hot2:#3a1a24;--ok:#3ddc9a;--soft:#1b2547}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom))}
+main{max-width:620px;margin:0 auto;padding:16px}
+h2{font-size:22px;margin:4px 0 12px;letter-spacing:-.01em}
+h3{font-size:15px;margin:22px 0 8px;color:var(--mute);font-weight:600}
+p{margin:0}small,.mute{color:var(--mute);font-size:13px}
+.hero{background:var(--pri);color:var(--on);border-radius:22px;padding:20px 20px 16px}
+.hero .big{font-size:76px;font-weight:800;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.hero .big span{font-size:22px;font-weight:600;letter-spacing:0;margin-left:8px}
+.hero p{opacity:.9;margin-top:6px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scrollbar-width:none}
+.chip{flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:92px}
+.chip b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.chip small{display:block}
+.chip.hot{border-color:var(--hot)}.chip.hot b{color:var(--hot)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}
+.banner{background:var(--hot2);color:var(--hot);font-weight:700;border-radius:10px;padding:10px 12px;margin-top:10px}
+.task{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;cursor:pointer}
+.task input{width:26px;height:26px;flex:0 0 auto;accent-color:var(--ok);margin:2px 0 0}
+.task small{display:block;font-weight:600;margin-bottom:2px}
+.task.on{opacity:.55}.task.on p{text-decoration:line-through}
+.bar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ok)}
+.nav2{display:flex;gap:10px;margin-top:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{width:100%;background:var(--pri);color:var(--on);border:0;border-radius:12px;padding:13px;font-weight:700;margin-top:10px}
+.btn:disabled{opacity:.4}.btn.bad{background:var(--hot)}.btn.good{background:var(--ok);color:#fff}
+.ghost{flex:1;background:transparent;border:1px solid var(--line);border-radius:12px;padding:10px}
+.link{background:none;border:0;color:var(--mute);width:100%;padding:12px;text-decoration:underline}
+.two{display:flex;gap:10px}
+.row{display:flex;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;align-items:flex-start}
+.row .dt{flex:0 0 86px;font-weight:700}.row span:nth-child(2){flex:1;font-size:14px}.row i{color:var(--ok);font-style:normal;font-weight:800}
+.row.ex{border-color:var(--hot);background:var(--hot2)}.row.now{outline:2px solid var(--pri)}
+select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:8px 0}.li button{background:none;border:0;font-size:22px;color:var(--mute)}
+.big2 p{font-size:19px;margin-top:6px}hr{border:0;border-top:1px dashed var(--line);margin:14px 0}
+.tm{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:10px 0 8px;font-size:12px;color:var(--mute)}nav button b{display:block;font-size:20px}nav .on{color:var(--pri);font-weight:700}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+</style></head><body>
+<main id="v"></main>
+<nav><button data-tab="today"><b>📅</b>Today</button><button data-tab="plan"><b>🗓️</b>Plan</button><button data-tab="cards"><b>🃏</b>Cards</button><button data-tab="how"><b>💡</b>How it works</button></nav>
+<script>
+const PLAN=[
+["2026-11-16",1,"FPGA Unit 1","VC Unit 1 (VM types, emulation, taxonomy). Make cards."],
+["2026-11-17",1,"FPGA Unit 2, part 1","VC Unit 2 (hypervisors, partitioning)"],
+["2026-11-18",1,"FPGA Unit 2, part 2, then recall Unit 1","Python Units 1-2. Write small programs, don't just read."],
+["2026-11-19",1,"FPGA Unit 3 (adders, multipliers, Verilog)","Robotics Unit 1 (anatomy, DOF, gripper force numericals)"],
+["2026-11-20",1,"FPGA Unit 4","Robotics Unit 2 (RR kinematics, transformations, DH)"],
+["2026-11-21",1,"FPGA Unit 5 and leftovers. Verilog/VHDL code drill.","DL Units 1-2 (PCA, SVD, perceptron, regularisation)"],
+["2026-11-22",1,"FPGA second pass: Units 1-2 from a blank page","VC Unit 5 (cloud)"],
+["2026-11-23",1,"FPGA second pass: Units 3-5 and code-writing drill","Python Unit 5, then recap Units 3-4"],
+["2026-11-24",1,"FPGA timed mock, 10:00 to 1:00. Mark it and fix gaps.","Cards only, 30 min"],
+["2026-11-25",1,"Light day: one-page summaries, redraw diagrams. Stop by 6 pm, sleep by 10:30.","None"],
+["2026-11-26",2,"FPGA EXAM 10:00 to 1:00. Rest until 4 pm, then DL Unit 1 numericals.","None","FPGA","10:00-1:00"],
+["2026-11-27",2,"DL Units 2-3 (regularisation, optimisers, CNN and variants)","Python Units 1-2 coding drill"],
+["2026-11-28",2,"DL Unit 4 (CNN architectures, RNN/LSTM, autoencoders, transfer learning). Draw every diagram.","Python Units 3-4 coding"],
+["2026-11-29",2,"DL Unit 5 if any, then 4 timed 16-mark answers","VC Units 3-4 cards"],
+["2026-11-30",2,"Morning: DL weak spots. 2 to 5 pm: DL timed mock.","Python full mock"],
+["2026-12-01",2,"9 to 11:30: DL formula sheet, diagrams, error log. Then stop. DL EXAM 2:00 to 5:00.","6 to 9 pm: Python final consolidation","Deep Learning","2:00-5:00"],
+["2026-12-02",2,"Python recall and a mock until noon, then rest. PYTHON EXAM 2:00 to 5:00.","None","Python","2:00-5:00"],
+["2026-12-03",3,"Robotics Units 1-2 numericals (gripper force, RR kinematics, transformations)","Robotics Unit 3 (sensors, control, vision)"],
+["2026-12-04",3,"Robotics Units 3-4 (control, sensors, adaptive, vision, programming)","VC Units 1-2 recall"],
+["2026-12-05",3,"Numericals marathon, then a 2 to 5 pm Robotics timed mock","VC Unit 5 recall"],
+["2026-12-06",3,"VC: blank-page recall of all five units, plus diagrams","Robotics error log and formulas"],
+["2026-12-07",3,"9 to 11:30: Robotics final look. ROBOTICS EXAM 2:00 to 5:00.","6 to 10 pm: VC unit by unit","Robotics","2:00-5:00"],
+["2026-12-08",3,"Morning: VC cards from Boxes 1-2, then diagrams. VC EXAM 2:00 to 5:00.","None","Virtual Computing","2:00-5:00"]
+].map(a=>({d:a[0],p:a[1],m:a[2],e:a[3],x:a[4],t:a[5]}));
+const EXAMS=[["FPGA","2026-11-26"],["Deep Learning","2026-12-01"],["Python","2026-12-02"],["Robotics","2026-12-07"],["Virtual Computing","2026-12-08"]];
+const PH={1:"Phase 1: FPGA is the main subject, other subjects start in the evenings",2:"Phase 2: Deep Learning, then Python",3:"Phase 3: Robotics, then Virtual Computing"};
+const IV={1:1,2:3,3:7},SUBJ=["FPGA","Deep Learning","Python","Robotics","Virtual Computing"];
+const HOW=[["Flashcards in 3 boxes","Every new card starts in Box 1 and shows up daily. Get it right and it moves up: Box 2 comes back in 3 days, Box 3 in 7 days. Get it wrong and it drops to Box 1. You spend time on what you forget, not what you know."],
+["Blank-page start","Before opening notes, spend 5 minutes writing everything you remember from yesterday. Trying to remember is what builds memory. The gaps you find are what to study."],
+["Explain it out loud","Once a day, explain one hard idea in simple words, like to a friend. If you get stuck, you have not understood it yet."],
+["Draw the diagram","Your examiners want diagrams. Draw each key one from memory at least three times."],
+["Timed mock papers","Do one full paper per subject at the real exam time of day. Mark it honestly."],
+["Mistake notebook","Write every wrong answer with why it went wrong and the fix. The morning before an exam, read only this notebook and your one-page summaries."],
+["50 and 10","Study 50 minutes, break 10. Use the timer on the Today page. Sleep properly: no new topics after 9 pm the night before an exam."]];
+const K="sem7planner1";let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}S.done=S.done||{};S.cards=S.cards||[];
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const P=s=>new Date(s+"T12:00:00"),diff=(a,b)=>Math.round((P(b)-P(a))/864e5),today=()=>ymd(new Date());
+const fmt=(s,o)=>P(s).toLocaleDateString("en-GB",o);
+const clamp=d=>d<PLAN[0].d?PLAN[0].d:d>PLAN[PLAN.length-1].d?PLAN[PLAN.length-1].d:d;
+let tab="today",sel=clamp(today()),rev=null;
+const tasks=x=>{const t=[["m","Morning, main study",x.m]];if(x.e!=="None")t.push(["e","Evening, second subject",x.e]);t.push(["n","Night, 20 minutes","Review due cards. Write today's mistakes in your notebook."]);return t};
+const dayDone=x=>tasks(x).every(t=>S.done[x.d+t[0]]);
+let tm={m:"Focus",l:3000,run:null};
+const tmTxt=()=>tm.m+" "+String(Math.floor(tm.l/60)).padStart(2,"0")+":"+String(tm.l%60).padStart(2,"0");
+function tmToggle(){if(tm.run){clearInterval(tm.run);tm.run=null}else tm.run=setInterval(()=>{tm.l--;if(tm.l<=0){tm.m=tm.m==="Focus"?"Break":"Focus";tm.l=tm.m==="Focus"?3000:600;navigator.vibrate&&navigator.vibrate(300)}const e=$("#tm");if(e)e.textContent=tmTxt()},1000);render()}
+function vToday(){
+ const x=PLAN.find(y=>y.d===sel),i=PLAN.indexOf(x),t0=today();
+ const next=EXAMS.find(e=>diff(t0,e[1])>=0),n=next?diff(t0,next[1]):null;
+ const hero=next?`<div class="hero"><div class="big">${n===0?"Today":n}<span>${n===0?next[0]+" exam":n===1?"day to "+next[0]:"days to "+next[0]}</span></div><p>${next[0]} is next. Your plan starts on ${fmt(PLAN[0].d,{day:"numeric",month:"short"})}.</p></div>`:`<div class="hero"><div class="big">Done</div><p>All exams finished. Well done.</p></div>`;
+ const chips=EXAMS.map(e=>{const k=diff(t0,e[1]);return `<div class="chip ${k>=0&&k<=3?"hot":""}"><b>${k<0?"✓":k===0?"Today":k+" d"}</b><small>${e[0]}</small></div>`}).join("");
+ const done=PLAN.filter(dayDone).length;
+ return hero+`<div class="chips">${chips}</div>
+ <h2 style="margin-top:20px">${fmt(sel,{weekday:"long",day:"numeric",month:"long"})}</h2><small>${PH[x.p]}</small>
+ ${x.x?`<div class="banner">Exam day: ${x.x}, ${x.t}</div>`:""}
+ ${tasks(x).map(t=>`<label class="task ${S.done[x.d+t[0]]?"on":""}"><input type="checkbox" data-k="${x.d+t[0]}" ${S.done[x.d+t[0]]?"checked":""}><div><small>${t[1]}</small><p>${esc(t[2])}</p></div></label>`).join("")}
+ ${x.e==="None"?`<p class="mute" style="margin-top:10px">No evening session today. Rest.</p>`:""}
+ <div class="card"><small>Start every session with 5 minutes of writing what you remember from yesterday.</small>
+ <div class="two" style="align-items:center;justify-content:space-between;margin-top:8px"><span class="tm" id="tm">${tmTxt()}</span><button class="ghost" style="flex:0 0 120px" data-a="tm">${tm.run?"Pause":"Start timer"}</button></div></div>
+ <div class="nav2"><button class="ghost" data-nav="${i-1}" ${i?"":"disabled"}>Previous day</button><button class="ghost" data-a="now">Go to today</button><button class="ghost" data-nav="${i+1}" ${i<PLAN.length-1?"":"disabled"}>Next day</button></div>
+ <h3>Progress: ${done} of ${PLAN.length} days finished</h3><div class="bar"><i style="width:${done/PLAN.length*100}%"></i></div>`}
+function vPlan(){return "<h2>All days</h2><small>Tap a day to open it.</small>"+[1,2,3].map(p=>`<h3>${PH[p]}</h3>`+PLAN.filter(x=>x.p===p).map(x=>`<button class="row ${x.x?"ex":""} ${x.d===today()?"now":""}" data-day="${x.d}"><span class="dt">${fmt(x.d,{weekday:"short",day:"numeric",month:"short"})}</span><span>${esc(x.m)}</span>${dayDone(x)?"<i>✓</i>":""}</button>`).join("")).join("")}
+const due=()=>S.cards.map((c,i)=>i).filter(i=>S.cards[i].n<=today());
+function vCards(){
+ if(rev){const c=S.cards[rev.q[rev.i]];if(c)return `<h2>Card ${rev.i+1} of ${rev.q.length}</h2><div class="card big2"><small>${esc(c.s)}, box ${c.b}</small><p>${esc(c.f)}</p>${rev.show?`<hr><p>${esc(c.a)}</p>`:""}</div>`+(rev.show?`<div class="two"><button class="btn bad" data-a="miss">Missed it</button><button class="btn good" data-a="got">Got it</button></div>`:`<button class="btn" data-a="show">Show answer</button>`)+`<button class="link" data-a="stop">Stop reviewing</button>`;rev=null}
+ const d=due(),cnt=b=>S.cards.filter(c=>c.b===b).length;
+ return `<h2>Flashcards</h2><div class="card"><p><b style="font-size:30px">${d.length}</b> due today, ${S.cards.length} in total</p><small>Box 1: ${cnt(1)}. Box 2: ${cnt(2)}. Box 3: ${cnt(3)}.</small><button class="btn" data-a="rev" ${d.length?"":"disabled"}>Review ${d.length} due</button></div>
+ <h3>Add a card</h3><div class="card"><select id="cs">${SUBJ.map(s=>`<option>${s}</option>`).join("")}</select><textarea id="cf" rows="2" placeholder="Question, or 'Draw the ResNet block'"></textarea><textarea id="cb" rows="3" placeholder="Answer"></textarea><button class="btn" data-a="add">Add card</button></div>
+ <h3>Your cards</h3>${S.cards.map((c,i)=>`<div class="li"><span><small>${esc(c.s)}, box ${c.b}</small><br>${esc(c.f)}</span><button data-del="${i}" aria-label="Delete card">×</button></div>`).join("")||`<p class="mute">No cards yet. Add your first one above.</p>`}`}
+const vHow=()=>"<h2>How it works</h2><small>Each idea is a way to remember more in less time.</small>"+HOW.map(h=>`<div class="card"><b>${h[0]}</b><p class="mute" style="margin-top:4px">${h[1]}</p></div>`).join("");
+function render(){$("#v").innerHTML={today:vToday,plan:vPlan,cards:vCards,how:vHow}[tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab))}
+function grade(ok){const c=S.cards[rev.q[rev.i]];c.b=ok?Math.min(3,c.b+1):1;c.n=ymd(new Date(Date.now()+IV[c.b]*864e5));save();rev.i++;rev.show=false;if(rev.i>=rev.q.length)rev=null;render()}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-day],[data-a],[data-del],[data-nav]");if(!t||t.disabled)return;const d=t.dataset;
+ if(d.tab){tab=d.tab;rev=null;return render()}
+ if(d.day){sel=d.day;tab="today";return render()}
+ if(d.nav){sel=PLAN[+d.nav].d;return render()}
+ if(d.del!==undefined){S.cards.splice(+d.del,1);save();return render()}
+ const a=d.a;
+ if(a==="now"){sel=clamp(today())}
+ else if(a==="tm")return tmToggle();
+ else if(a==="rev"){rev={q:due(),i:0,show:false}}
+ else if(a==="show"){rev.show=true}
+ else if(a==="got"||a==="miss")return grade(a==="got");
+ else if(a==="stop"){rev=null}
+ else if(a==="add"){const f=$("#cf").value.trim(),b=$("#cb").value.trim();if(!f||!b){alert("Write both a question and an answer.");return}S.cards.push({s:$("#cs").value,f:f,a:b,b:1,n:today()});save()}
+ render()});
+document.addEventListener("change",e=>{const k=e.target.dataset.k;if(k){S.done[k]=e.target.checked;save();render()}});
+render();
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
