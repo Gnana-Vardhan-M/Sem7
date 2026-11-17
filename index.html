@@ -162,8 +162,9 @@ const HOW=[["Flashcards in 3 boxes","Every new card starts in Box 1 and shows up
 ["Draw the diagram","Your examiners want diagrams. Draw each key one from memory at least three times."],
 ["Timed mock papers","Do one full paper per subject at the real exam time of day. Mark it honestly."],
 ["Mistake notebook","Write every wrong answer with why it went wrong and the fix. The morning before an exam, read only this notebook and your one-page summaries."],
+["The plan adjusts itself","If you cannot study, tap I can't study today on the Today page. Days that pass with tasks unticked also count as missed. Missed study tasks come back as catch-up rows on your next days, earliest exam first, and never after that subject's exam. Tap Drop on a catch-up if it is too much."],
 ["50 and 10","Study 50 minutes, break 10. Use the timer on the Today page. Sleep properly: no new topics after 9 pm the night before an exam."]];
-const K="sem7planner1";let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}S.done=S.done||{};S.cards=S.cards||[];
+const K="sem7planner1";let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}S.done=S.done||{};S.cards=S.cards||[];S.skip=S.skip||{};S.drop=S.drop||{};
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const $=s=>document.querySelector(s);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -172,8 +173,26 @@ const P=s=>new Date(s+"T12:00:00"),diff=(a,b)=>Math.round((P(b)-P(a))/864e5),tod
 const fmt=(s,o)=>P(s).toLocaleDateString("en-GB",o);
 const clamp=d=>d<PLAN[0].d?PLAN[0].d:d>PLAN[PLAN.length-1].d?PLAN[PLAN.length-1].d:d;
 let tab="today",sel=clamp(today()),rev=null;
-const tasks=x=>{const t=[["m","Morning, main study",x.m]];if(x.e!=="None")t.push(["e","Evening, second subject",x.e]);t.push(["n","Night, 20 minutes","Review due cards. Write today's mistakes in your notebook."]);return t};
-const dayDone=x=>tasks(x).every(t=>S.done[x.d+t[0]]);
+const EXD={FPGA:"2026-11-26","Deep Learning":"2026-12-01",Python:"2026-12-02",Robotics:"2026-12-07","Virtual Computing":"2026-12-08"};
+const SN={FPGA:"FPGA",DL:"Deep Learning",Python:"Python",Robotics:"Robotics",VC:"Virtual Computing"};
+const subOf=t=>/EXAM|Light day|Cards only|^None/.test(t)?null:SN[(t.match(/FPGA|DL|Python|Robotics|VC/)||[])[0]];
+const isDone=(d,k)=>!!(S.done[d+k]||S.done["cu"+d+k]);
+let ADJ={out:{},miss:[]};
+function adjust(){
+ const t0=today(),out={},miss=[];
+ PLAN.forEach(x=>[["m",x.m],["e",x.e]].forEach(a=>{const s=subOf(a[1]);if(!s)return;
+  if((x.d<t0||S.skip[x.d])&&!isDone(x.d,a[0])&&!S.drop["cu"+x.d+a[0]])miss.push({d:x.d,k:a[0],s:s,txt:a[1],dl:EXD[s]})}));
+ miss.sort((a,b)=>a.dl<b.dl?-1:a.dl>b.dl?1:a.d<b.d?-1:1);
+ const st=S.skip[t0]?ymd(new Date(Date.now()+864e5)):t0;
+ const cand=PLAN.filter(x=>!x.x&&x.d>=st&&!/^Light/.test(x.m));
+ miss.forEach(m=>{const w=cand.filter(x=>x.d<m.dl);let h=null;
+  for(let cap=1;cap<=4&&!h;cap++)h=w.find(x=>(out[x.d]||[]).length<cap);
+  h=h||w[w.length-1]||cand[0];if(h)(out[h.d]=out[h.d]||[]).push(m)});
+ return{out:out,miss:miss}}
+const tasks=x=>{const t=[["m","Morning, main study",x.m]];if(x.e!=="None")t.push(["e","Evening, second subject",x.e]);t.push(["n","Night, 20 minutes","Review due cards. Write today's mistakes in your notebook."]);
+ return t.map(a=>({key:x.d+a[0],lab:a[1],txt:a[2],done:a[0]==="n"?!!S.done[x.d+"n"]:isDone(x.d,a[0])}))
+ .concat((ADJ.out[x.d]||[]).map(m=>({key:"cu"+m.d+m.k,lab:"Catch-up from "+fmt(m.d,{weekday:"short",day:"numeric",month:"short"})+", about 60 to 90 min",txt:m.txt,done:!!S.done["cu"+m.d+m.k],cu:1})))};
+const dayDone=x=>tasks(x).every(t=>t.done||(S.skip[x.d]&&t.key.slice(-1)==="n"&&!t.cu));
 let tm={m:"Focus",l:3000,run:null};
 const tmTxt=()=>tm.m+" "+String(Math.floor(tm.l/60)).padStart(2,"0")+":"+String(tm.l%60).padStart(2,"0");
 function tmToggle(){if(tm.run){clearInterval(tm.run);tm.run=null}else tm.run=setInterval(()=>{tm.l--;if(tm.l<=0){tm.m=tm.m==="Focus"?"Break":"Focus";tm.l=tm.m==="Focus"?3000:600;navigator.vibrate&&navigator.vibrate(300)}const e=$("#tm");if(e)e.textContent=tmTxt()},1000);render()}
@@ -182,17 +201,20 @@ function vToday(){
  const next=EXAMS.find(e=>diff(t0,e[1])>=0),n=next?diff(t0,next[1]):null;
  const hero=next?`<div class="hero"><div class="big">${n===0?"Today":n}<span>${n===0?next[0]+" exam":n===1?"day to "+next[0]:"days to "+next[0]}</span></div><p>${next[0]} is next. Your plan starts on ${fmt(PLAN[0].d,{day:"numeric",month:"short"})}.</p></div>`:`<div class="hero"><div class="big">Done</div><p>All exams finished. Well done.</p></div>`;
  const chips=EXAMS.map(e=>{const k=diff(t0,e[1]);return `<div class="chip ${k>=0&&k<=3?"hot":""}"><b>${k<0?"✓":k===0?"Today":k+" d"}</b><small>${e[0]}</small></div>`}).join("");
- const done=PLAN.filter(dayDone).length;
+ const done=PLAN.filter(dayDone).length,nm=ADJ.miss.length,list=S.skip[x.d]?tasks(x).filter(t=>t.cu):tasks(x);
+ const status=nm?`<div class="card"><b>Plan adjusted</b><p class="mute">${nm} missed task${nm>1?"s were":" was"} moved to your next days as catch-up rows, earliest exam first. Each adds about 60 to 90 minutes. Tap Drop on any you want to skip.</p></div>`:"";
  return hero+`<div class="chips">${chips}</div>
- <h2 style="margin-top:20px">${fmt(sel,{weekday:"long",day:"numeric",month:"long"})}</h2><small>${PH[x.p]}</small>
+ ${status}<h2 style="margin-top:20px">${fmt(sel,{weekday:"long",day:"numeric",month:"long"})}</h2><small>${PH[x.p]}</small>
  ${x.x?`<div class="banner">Exam day: ${x.x}, ${x.t}</div>`:""}
- ${tasks(x).map(t=>`<label class="task ${S.done[x.d+t[0]]?"on":""}"><input type="checkbox" data-k="${x.d+t[0]}" ${S.done[x.d+t[0]]?"checked":""}><div><small>${t[1]}</small><p>${esc(t[2])}</p></div></label>`).join("")}
+ ${S.skip[x.d]?`<div class="card"><b>You skipped this day.</b><p class="mute">Its study tasks were moved to later days as catch-up.</p><button class="ghost" style="width:100%;margin-top:8px" data-a="unskip">Undo skip</button></div>`:""}
+ ${list.map(t=>`<label class="task ${t.done?"on":""}"><input type="checkbox" data-k="${t.key}" ${t.done?"checked":""}><div style="flex:1"><small>${t.lab}</small><p>${esc(t.txt)}</p></div>${t.cu?`<button class="ghost" style="flex:0 0 auto" data-drop="${t.key}">Drop</button>`:""}</label>`).join("")}
  ${x.e==="None"?`<p class="mute" style="margin-top:10px">No evening session today. Rest.</p>`:""}
+ ${x.d===t0&&!S.skip[x.d]&&!x.x?`<button class="ghost" style="width:100%;margin-top:10px" data-a="skip">I can't study today. Adjust my plan.</button>`:""}
  <div class="card"><small>Start every session with 5 minutes of writing what you remember from yesterday.</small>
  <div class="two" style="align-items:center;justify-content:space-between;margin-top:8px"><span class="tm" id="tm">${tmTxt()}</span><span style="display:flex;gap:8px"><button class="ghost" data-a="tm">${tm.run?"Pause":"Start"}</button><button class="ghost" data-a="tmr">Reset</button></span></div></div>
  <div class="nav2"><button class="ghost" data-nav="${i-1}" ${i?"":"disabled"}>Previous day</button><button class="ghost" data-a="now">Go to today</button><button class="ghost" data-nav="${i+1}" ${i<PLAN.length-1?"":"disabled"}>Next day</button></div>
  <h3>Progress: ${done} of ${PLAN.length} days finished</h3><div class="bar"><i style="width:${done/PLAN.length*100}%"></i></div>`}
-function vPlan(){return "<h2>All days</h2><small>Tap a day to open it.</small>"+[1,2,3].map(p=>`<h3>${PH[p]}</h3>`+PLAN.filter(x=>x.p===p).map(x=>`<button class="row ${x.x?"ex":""} ${x.d===today()?"now":""}" data-day="${x.d}"><span class="dt">${fmt(x.d,{weekday:"short",day:"numeric",month:"short"})}</span><span>${esc(x.m)}</span>${dayDone(x)?"<i>✓</i>":""}</button>`).join("")).join("")}
+function vPlan(){return "<h2>All days</h2><small>Tap a day to open it.</small>"+[1,2,3].map(p=>`<h3>${PH[p]}</h3>`+PLAN.filter(x=>x.p===p).map(x=>`<button class="row ${x.x?"ex":""} ${x.d===today()?"now":""}" data-day="${x.d}"><span class="dt">${fmt(x.d,{weekday:"short",day:"numeric",month:"short"})}</span><span>${esc(x.m)}</span>${(ADJ.out[x.d]||[]).length?`<i style="color:var(--hot)">+${ADJ.out[x.d].length}</i>`:""}${dayDone(x)?"<i>✓</i>":""}</button>`).join("")).join("")}
 const due=()=>S.cards.map((c,i)=>i).filter(i=>S.cards[i].n<=today());
 function vCards(){
  if(rev){const c=S.cards[rev.q[rev.i]];if(c)return `<h2>Card ${rev.i+1} of ${rev.q.length}</h2><div class="card big2"><small>${esc(c.s)}, box ${c.b}</small><p>${esc(c.f)}</p>${rev.show?`<hr><p>${esc(c.a)}</p>`:""}</div>`+(rev.show?`<div class="two"><button class="btn bad" data-a="miss">Missed it</button><button class="btn good" data-a="got">Got it</button></div>`:`<button class="btn" data-a="show">Show answer</button>`)+`<button class="link" data-a="stop">Stop reviewing</button>`;rev=null}
@@ -202,11 +224,12 @@ function vCards(){
  <h3>Add a card</h3><div class="card"><select id="cs">${SUBJ.map(s=>`<option>${s}</option>`).join("")}</select><textarea id="cf" rows="2" placeholder="Question, or 'Draw the ResNet block'"></textarea><textarea id="cb" rows="3" placeholder="Answer"></textarea><button class="btn" data-a="add">Add card</button></div>
  <h3>Your cards</h3>${S.cards.map((c,i)=>`<div class="li"><span><small>${esc(c.s)}, box ${c.b}</small><br>${esc(c.f)}</span><button data-del="${i}" aria-label="Delete card">×</button></div>`).join("")||`<p class="mute">No cards yet. Add your first one above.</p>`}`}
 const vHow=()=>"<h2>How it works</h2><small>Each idea is a way to remember more in less time.</small>"+HOW.map(h=>`<div class="card"><b>${h[0]}</b><p class="mute" style="margin-top:4px">${h[1]}</p></div>`).join("");
-function render(){$("#v").innerHTML={today:vToday,plan:vPlan,cards:vCards,how:vHow}[tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab))}
+function render(){ADJ=adjust();$("#v").innerHTML={today:vToday,plan:vPlan,cards:vCards,how:vHow}[tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab))}
 function grade(ok){const c=S.cards[rev.q[rev.i]];c.b=ok?Math.min(3,c.b+1):1;c.n=ymd(new Date(Date.now()+IV[c.b]*864e5));save();rev.i++;rev.show=false;if(rev.i>=rev.q.length)rev=null;render()}
-document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-day],[data-a],[data-del],[data-nav],[data-deck]");if(!t||t.disabled)return;const d=t.dataset;
+document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-day],[data-a],[data-del],[data-nav],[data-deck],[data-drop]");if(!t||t.disabled)return;const d=t.dataset;
  if(d.tab){tab=d.tab;rev=null;return render()}
  if(d.deck){DECK.filter(c=>(d.deck==="*"||c[0]===d.deck)&&!have(c)).forEach(c=>S.cards.push({s:c[0],f:c[1],a:c[2],b:1,n:today()}));save();return render()}
+ if(d.drop){S.drop[d.drop]=true;save();return render()}
  if(d.day){sel=d.day;tab="today";return render()}
  if(d.nav){sel=PLAN[+d.nav].d;return render()}
  if(d.del!==undefined){S.cards.splice(+d.del,1);save();return render()}
@@ -218,6 +241,8 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data
  else if(a==="show"){rev.show=true}
  else if(a==="got"||a==="miss")return grade(a==="got");
  else if(a==="stop"){rev=null}
+ else if(a==="skip"){S.skip[today()]=true;save()}
+ else if(a==="unskip"){delete S.skip[sel];save()}
  else if(a==="add"){const f=$("#cf").value.trim(),b=$("#cb").value.trim();if(!f||!b){alert("Write both a question and an answer.");return}S.cards.push({s:$("#cs").value,f:f,a:b,b:1,n:today()});save()}
  render()});
 document.addEventListener("change",e=>{const k=e.target.dataset.k;if(k){S.done[k]=e.target.checked;save();render()}});
