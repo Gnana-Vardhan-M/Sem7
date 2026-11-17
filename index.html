@@ -51,6 +51,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-of
 </style></head><body>
 <main id="v"></main>
 <nav><button data-tab="today"><b>📅</b>Today</button><button data-tab="plan"><b>🗓️</b>Plan</button><button data-tab="cards"><b>🃏</b>Cards</button><button data-tab="how"><b>💡</b>How it works</button></nav>
+<script src="cards.js"></script>
 <script>
 const PLAN=[
 ["2026-11-16",1,"FPGA Unit 1","VC Unit 1 (VM types, emulation, taxonomy). Make cards."],
@@ -79,81 +80,7 @@ const PLAN=[
 ].map(a=>({d:a[0],p:a[1],m:a[2],e:a[3],x:a[4],t:a[5]}));
 const EXAMS=[["FPGA","2026-11-26"],["Deep Learning","2026-12-01"],["Python","2026-12-02"],["Robotics","2026-12-07"],["Virtual Computing","2026-12-08"]];
 const PH={1:"Phase 1: FPGA is the main subject, other subjects start in the evenings",2:"Phase 2: Deep Learning, then Python",3:"Phase 3: Robotics, then Virtual Computing"};
-const DECK=[
-["FPGA","Full adder: sum and carry equations?","sum = a ^ b ^ cin. carry = ab + b·cin + cin·a."],
-["FPGA","Why is a ripple carry adder slow?","Each carry must pass through every full adder in turn, so delay grows with the number of bits."],
-["FPGA","Carry look-ahead adder: what are P and G, and the carry rule?","P = a ^ b (propagate), G = a & b (generate). C(i+1) = Gi + Pi·Ci. Sum = Pi ^ Ci. All carries are computed in parallel."],
-["FPGA","Carry skip adder: how does it speed up the carry?","If every propagate bit in a block is 1 (P0·P1·P2·P3 = 1), the block carry-in skips the ripple and goes straight to the carry-out through a mux."],
-["FPGA","Braun array multiplier: structure? (4x4 lab code)","AND gates make the partial products (16 for 4x4), then a regular grid of full adders adds them (about 12 in the lab code). Simple layout, but a long delay."],
-["FPGA","Wallace tree vs array multiplier?","Wallace tree adds partial products in parallel levels using full/half adders, then one final adder. Fewer levels, so faster (delay about log n), but irregular layout."],
-["FPGA","Three modeling styles in Verilog?","Dataflow (assign statements), structural (gate or module instances), behavioral (always blocks)."],
-["FPGA","Blocking (=) vs non-blocking (<=)?","Use <= inside clocked always blocks (sequential logic). Use = for combinational logic. Non-blocking updates all registers together at the clock edge."],
-["FPGA","Write a half adder in Verilog (dataflow).","module ha(s,c,a,b); input a,b; output s,c; assign s=a^b; assign c=a&b; endmodule"],
-["FPGA","Lab error: 'expecting ;, found output'. Likely cause?","A missing semicolon at the end of the previous line, e.g. 'input a,b' without ';'."],
-["FPGA","Switch-level inverter: which switches?","pmos from supply1 (pwr) to out, nmos from out to supply0 (gnd), both gated by the input. pmos p1(out,pwr,in); nmos n1(out,gnd,in);"],
-["FPGA","What is inside a basic FPGA?","Configurable logic blocks (look-up tables plus flip-flops), programmable routing, and I/O blocks."],
-["FPGA","Barrel shifter: what does it do?","Shifts or rotates data by any amount in a single step using layers of multiplexers (4 x 4:1 muxes for 4 bits in the lab)."],
-["Deep Learning","Conv output size formula?","W_out = floor((W - F + 2P) / S) + 1"],
-["Deep Learning","Parameters in a conv layer?","(F x F x C_in + 1) x C_out. The +1 is the bias of each filter."],
-["Deep Learning","Why was ResNet needed? Core equation?","Very deep plain nets got worse training error (degradation problem). Residual block: y = F(x) + x. The skip connection lets gradients flow and makes identity easy to learn."],
-["Deep Learning","Why use 1x1 convolutions in Inception?","They reduce the number of channels before the costly 3x3 and 5x5 convolutions, cutting computation about 10x in the worked example."],
-["Deep Learning","AlexNet innovations?","ReLU, dropout (0.5), overlapping max-pooling, local response normalisation, data augmentation, training on 2 GPUs. 8 layers, about 60M parameters, won ILSVRC 2012."],
-["Deep Learning","Why stack 3x3 filters in VGG?","Three 3x3 layers see a 7x7 area but need 27C^2 weights instead of 49C^2, and add more ReLUs. VGG-16 has about 138M parameters."],
-["Deep Learning","LeNet-5 layer sequence?","32x32 input, C1 6@28x28, S2, C3 16@10x10, S4, C5 120, F6 84, output 10. About 61K parameters."],
-["Deep Learning","Why do RNN gradients vanish or explode?","The same weight matrix is multiplied again and again over time, so gradients shrink or grow exponentially. Fixes: LSTM/GRU, gradient clipping, good initialisation."],
-["Deep Learning","LSTM equations?","f = sigmoid(Wf[h,x]+bf); i = sigmoid(Wi[h,x]+bi); c~ = tanh(Wc[h,x]+bc); c = f*c_prev + i*c~; o = sigmoid(Wo[h,x]+bo); h = o*tanh(c)"],
-["Deep Learning","Bidirectional RNN: idea and limit?","One RNN reads forward, one backward, and their states are combined. Uses past and future context, but needs the whole sequence, so not for real-time prediction."],
-["Deep Learning","VAE: how is the latent vector made, and the loss?","Encoder outputs mean and sigma. z = mu + sigma*eps with eps ~ N(0,I). Loss = reconstruction loss + KL divergence to N(0,I)."],
-["Deep Learning","Denoising autoencoder: how is it trained?","Corrupt the input with noise, then train the network to reconstruct the original clean input."],
-["Deep Learning","Transfer learning: three strategies?","1) Fixed feature extractor: freeze base, train a new head. 2) Partial fine-tuning: unfreeze top layers, tiny learning rate (1e-4 to 1e-5). 3) Full fine-tuning: update everything."],
-["Deep Learning","L1 vs L2 regularisation?","L1 (lasso) adds the sum of |weights|, gives sparse weights, some exactly 0. L2 (ridge) adds the sum of squared weights, gives small weights, rarely 0."],
-["Deep Learning","Dropout and early stopping: how do they stop overfitting?","Dropout randomly switches off neurons during training so they cannot depend on each other. Early stopping ends training when validation loss stops improving (patience) and restores the best weights."],
-["Python","Mutable vs immutable types?","Mutable: list, dict, set. Immutable: tuple, str, int, float."],
-["Python","Write a list comprehension for squares of even numbers below 6.","[x*x for x in range(6) if x % 2 == 0]  gives [0, 4, 16]"],
-["Python","lambda syntax and use?","lambda x: x*2 is a small anonymous function with one expression, handy with map, filter and sorted."],
-["Python","Exception handling structure?","try: risky code / except SomeError as e: handle / else: runs if no error / finally: always runs."],
-["Python","Read a text file line by line.","with open('f.txt') as f:\n    for line in f:\n        print(line.strip())"],
-["Python","Regex to detect a phone number like 415-555-1234?","import re; re.search(r'\\d{3}-\\d{3}-\\d{4}', text). findall returns all matches."],
-["Python","How to check a strong password?","Use several regex searches: at least 8 characters, an uppercase letter, a lowercase letter and a digit. All must match."],
-["Python","sys module vs os module?","sys: interpreter things (argv, exit, path). os: operating system things (listdir, mkdir, getcwd, path.join, remove)."],
-["Python","Start a thread and wait for it.","t = threading.Thread(target=f, args=(x,)); t.start(); t.join(). For true parallel CPU work use the multiprocessing module."],
-["Python","TCP server steps with sockets?","socket() -> bind() -> listen() -> accept() -> recv()/send() -> close(). Client: socket() -> connect() -> send()/recv()."],
-["Python","How can a server handle multiple clients?","Start a new thread (or process) for each accepted connection, or use select to watch many sockets."],
-["Python","FTP and SMTP in Python?","ftplib.FTP(host) then login() and retrbinary()/storbinary(). smtplib.SMTP(host, port) then starttls(), login(), sendmail()."],
-["Python","CGI script output rules?","Print a header like 'Content-type: text/html', then a blank line, then the HTML. Parameters come from the URL after '?' as name=value pairs."],
-["Python","Copy, move, rename, delete, zip files?","shutil.copy, shutil.move, os.rename, os.remove, and zipfile.ZipFile('a.zip','w').write(file)."],
-["Robotics","Five joint types and symbols?","Translational: L (linear), O (orthogonal). Rotary: R (rotational), T (twisting), V (revolving)."],
-["Robotics","Five arm configurations and notations?","Polar TRL, cylindrical TLO, Cartesian LOO, jointed-arm TRR, SCARA VRO."],
-["Robotics","Degrees of freedom of a rigid body?","Space: 6 (3 translations + 3 rotations). Plane: 3. Redundant manipulator: more than 6 (spatial) or 3 (planar)."],
-["Robotics","Spatial resolution formula?","Increments = 2^n (n bits of control memory). Control resolution = total range / number of increments."],
-["Robotics","Accuracy vs repeatability?","Accuracy: how close the wrist gets to a target point (half the gap between adjacent resolution points). Repeatability: how well it returns to a previously taught point."],
-["Robotics","Forward vs inverse kinematics?","Forward: joint values give hand position. Inverse: desired hand position gives joint values."],
-["Robotics","2-link RR arm: forward kinematics?","x = L1 cos(t1) + L2 cos(t1+t2); y = L1 sin(t1) + L2 sin(t1+t2)"],
-["Robotics","2-link RR arm: inverse kinematics for theta2?","cos(t2) = (x^2 + y^2 - L1^2 - L2^2) / (2 L1 L2)"],
-["Robotics","Why homogeneous transformation matrices are 4x4?","They must be square so they can be multiplied and inverted, and one matrix holds both rotation and translation."],
-["Robotics","Gripper example: finger force 25 N, find actuating force.","Take moments for one finger: 25(4cos15) = F sin45(1.5cos15) + F cos45(1.5sin15), so F = 74.4 N. Fa = 2 x 74.4 x cos45 = 105.2 N."],
-["Robotics","Vacuum gripper lifting force?","F = P x A (negative pressure times total effective cup area)."],
-["Robotics","Hydraulic vs pneumatic vs electric drive?","Hydraulic: highest force, big robots, leaks. Pneumatic: cheap, fast pick-and-place, compressible so poor accuracy. Electric: precise and easy to control (servo, stepper)."],
-["Robotics","Four types of end effector gripping?","Impactive (jaws), ingressive (needles), astrictive (vacuum, magnetic), contigutive (glue, freezing)."],
-["Virtual Computing","Process VM vs System VM?","Process VM supports one process at the ABI level (user instructions + system calls), e.g. JVM. System VM supports a whole OS at the ISA level, run by a VMM."],
-["Virtual Computing","Interpretation vs binary translation?","Interpretation: low start-up cost but slow every time. Binary translation: high first cost, fast on repeats (cached). Staged emulation uses both with profiling."],
-["Virtual Computing","Type 1 vs Type 2 hypervisor?","Type 1 runs on bare metal (ESXi, Hyper-V, Xen, KVM): faster, more secure, for data centers. Type 2 runs on a host OS (VirtualBox, VMware Workstation): easy, slower, for desktops."],
-["Virtual Computing","Popek and Goldberg: three VMM properties?","Fidelity (same as the real machine), isolation or safety (VMM controls all resources), performance (little slowdown)."],
-["Virtual Computing","Emulation vs simulation vs virtualization?","Emulation: one environment impersonates another, with a speed penalty. Simulation: predefined inputs and outputs, used for chip design. Virtualization: shares real hardware among VMs."],
-["Virtual Computing","Server virtualization partitioning types?","Physical, hardware, logical (software, resource, service), application, and OS/runtime environment partitioning."],
-["Virtual Computing","Full vs para vs host-based virtualization?","Full: binary translation, guest OS unmodified. Para: guest OS modified to use hypercalls (Xen). Host-based: virtualization layer on top of a host OS, slower."],
-["Virtual Computing","Xen: Domain 0 and Domain U?","Domain 0 is the privileged guest that manages hardware and other VMs. Domain U are ordinary guests. If Domain 0 is compromised, the whole system is."],
-["Virtual Computing","CPU virtualization: three critical instruction types?","Privileged, control-sensitive, behavior-sensitive. They are trapped in the VMM, which runs in supervisor mode."],
-["Virtual Computing","Memory virtualization: the two-stage mapping?","Guest virtual to guest physical (guest OS), then guest physical to machine memory (VMM), using shadow page tables or nested page tables."],
-["Virtual Computing","Three ways to virtualize I/O?","Full device emulation, para-virtualization (split frontend/backend driver), direct I/O. Self-virtualized I/O is a fourth."],
-["Virtual Computing","Live migration of a VM: main steps?","Prepare, copy memory in rounds (re-copy changed pages), suspend and copy the last data, commit and activate on the new host, remove the old VM. Downtime must be tiny."],
-["Virtual Computing","Four states of a VM?","Inactive, active, paused, suspended."],
-["Virtual Computing","OS-level virtualization: pros and cons?","Containers share one kernel: fast start, low overhead, high density. But all must use the same OS family."],
-["Virtual Computing","IaaS vs PaaS vs SaaS with examples?","IaaS: virtual machines, storage, networks (AWS EC2). PaaS: platform to build and deploy apps (Google App Engine, Heroku). SaaS: ready software (Salesforce, Office 365)."],
-["Virtual Computing","Four cloud deployment models and cloud bursting?","Public, private, hybrid, community. Bursting: when private capacity runs out, the app overflows into the public cloud."],
-["Virtual Computing","The 6 R's of cloud migration?","Rehost, Replatform, Refactor, Repurchase, Retire, Retain."],
-["Virtual Computing","Microsoft Infrastructure Optimization levels?","Basic, Standardized, Rationalized, Dynamic."]
-];
+const DECK=window.DECK||[];
 const have=c=>S.cards.some(x=>x.f===c[1]);
 const IV={1:1,2:3,3:7},SUBJ=["FPGA","Deep Learning","Python","Robotics","Virtual Computing"];
 const HOW=[["Flashcards in 3 boxes","Every new card starts in Box 1 and shows up daily. Get it right and it moves up: Box 2 comes back in 3 days, Box 3 in 7 days. Get it wrong and it drops to Box 1. You spend time on what you forget, not what you know."],
@@ -164,7 +91,7 @@ const HOW=[["Flashcards in 3 boxes","Every new card starts in Box 1 and shows up
 ["Mistake notebook","Write every wrong answer with why it went wrong and the fix. The morning before an exam, read only this notebook and your one-page summaries."],
 ["The plan adjusts itself","If you cannot study, tap I can't study today on the Today page. Days that pass with tasks unticked also count as missed. Missed study tasks come back as catch-up rows on your next days, earliest exam first, and never after that subject's exam. Tap Drop on a catch-up if it is too much."],
 ["50 and 10","Study 50 minutes, break 10. Use the timer on the Today page. Sleep properly: no new topics after 9 pm the night before an exam."]];
-const K="sem7planner1";let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}S.done=S.done||{};S.cards=S.cards||[];S.skip=S.skip||{};S.drop=S.drop||{};
+const K="sem7planner1";let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}S.done=S.done||{};S.cards=S.cards||[];S.skip=S.skip||{};S.drop=S.drop||{};S.del=S.del||{};
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const $=s=>document.querySelector(s);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -210,6 +137,7 @@ function vToday(){
  ${list.map(t=>`<label class="task ${t.done?"on":""}"><input type="checkbox" data-k="${t.key}" ${t.done?"checked":""}><div style="flex:1"><small>${t.lab}</small><p>${esc(t.txt)}</p></div>${t.cu?`<button class="ghost" style="flex:0 0 auto" data-drop="${t.key}">Drop</button>`:""}</label>`).join("")}
  ${x.e==="None"?`<p class="mute" style="margin-top:10px">No evening session today. Rest.</p>`:""}
  ${x.d===t0&&!S.skip[x.d]&&!x.x?`<button class="ghost" style="width:100%;margin-top:10px" data-a="skip">I can't study today. Adjust my plan.</button>`:""}
+ ${due().length?`<button class="ghost" style="width:100%;margin-top:10px" data-tab="cards">${due().length} cards to review. Open Cards</button>`:""}
  <div class="card"><small>Start every session with 5 minutes of writing what you remember from yesterday.</small>
  <div class="two" style="align-items:center;justify-content:space-between;margin-top:8px"><span class="tm" id="tm">${tmTxt()}</span><span style="display:flex;gap:8px"><button class="ghost" data-a="tm">${tm.run?"Pause":"Start"}</button><button class="ghost" data-a="tmr">Reset</button></span></div></div>
  <div class="nav2"><button class="ghost" data-nav="${i-1}" ${i?"":"disabled"}>Previous day</button><button class="ghost" data-a="now">Go to today</button><button class="ghost" data-nav="${i+1}" ${i<PLAN.length-1?"":"disabled"}>Next day</button></div>
@@ -219,20 +147,22 @@ const due=()=>S.cards.map((c,i)=>i).filter(i=>S.cards[i].n<=today());
 function vCards(){
  if(rev){const c=S.cards[rev.q[rev.i]];if(c)return `<h2>Card ${rev.i+1} of ${rev.q.length}</h2><div class="card big2"><small>${esc(c.s)}, box ${c.b}</small><p>${esc(c.f)}</p>${rev.show?`<hr><p>${esc(c.a)}</p>`:""}</div>`+(rev.show?`<div class="two"><button class="btn bad" data-a="miss">Missed it</button><button class="btn good" data-a="got">Got it</button></div>`:`<button class="btn" data-a="show">Show answer</button>`)+`<button class="link" data-a="stop">Stop reviewing</button>`;rev=null}
  const d=due(),cnt=b=>S.cards.filter(c=>c.b===b).length;
- return `<h2>Flashcards</h2><div class="card"><p><b style="font-size:30px">${d.length}</b> due today, ${S.cards.length} in total</p><small>Box 1: ${cnt(1)}. Box 2: ${cnt(2)}. Box 3: ${cnt(3)}.</small><button class="btn" data-a="rev" ${d.length?"":"disabled"}>Review ${d.length} due</button></div>
- <h3>Ready-made cards</h3><div class="card"><small>Made from your slides and notes. Add one subject at a time: about 25 new cards a day is plenty.</small>${(()=>{const n=DECK.filter(c=>!have(c)).length;return `<button class="btn" data-deck="*" ${n?"":"disabled"}>${n?"Add all "+n+" cards":"All cards added"}</button>`})()}${SUBJ.map(s=>{const n=DECK.filter(c=>c[0]===s&&!have(c)).length;return `<button class="ghost" style="width:100%;margin-top:8px" data-deck="${s}" ${n?"":"disabled"}>${n?"Add "+n+" "+s+" cards":s+" cards added"}</button>`}).join("")}</div>
+ return `<h2>Flashcards</h2>${S.newc?`<div class="banner" style="background:var(--soft);color:var(--ink)">${S.newc} new cards arrived from your plan.</div>`:""}<div class="card"><p><b style="font-size:30px">${d.length}</b> due today, ${S.cards.length} in total</p><small>Box 1: ${cnt(1)}. Box 2: ${cnt(2)}. Box 3: ${cnt(3)}.</small><button class="btn" data-a="rev" ${d.length?"":"disabled"}>Review ${d.length} due</button></div>
+ <h3>Ready-made cards</h3><div class="card"><small>New cards arrive on their own on the day they appear in your plan.</small>${(()=>{const n=DECK.filter(c=>!have(c)&&!S.del[c[1]]).length;return `<p style="margin-top:6px">${n} more scheduled for later days.</p><button class="ghost" style="width:100%;margin-top:8px" data-deck="*" ${n?"":"disabled"}>Add all ${n} now</button>`})()}</div>
  <h3>Add a card</h3><div class="card"><select id="cs">${SUBJ.map(s=>`<option>${s}</option>`).join("")}</select><textarea id="cf" rows="2" placeholder="Question, or 'Draw the ResNet block'"></textarea><textarea id="cb" rows="3" placeholder="Answer"></textarea><button class="btn" data-a="add">Add card</button></div>
  <h3>Your cards</h3>${S.cards.map((c,i)=>`<div class="li"><span><small>${esc(c.s)}, box ${c.b}</small><br>${esc(c.f)}</span><button data-del="${i}" aria-label="Delete card">×</button></div>`).join("")||`<p class="mute">No cards yet. Add your first one above.</p>`}`}
 const vHow=()=>"<h2>How it works</h2><small>Each idea is a way to remember more in less time.</small>"+HOW.map(h=>`<div class="card"><b>${h[0]}</b><p class="mute" style="margin-top:4px">${h[1]}</p></div>`).join("");
-function render(){ADJ=adjust();$("#v").innerHTML={today:vToday,plan:vPlan,cards:vCards,how:vHow}[tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab))}
+function sync(){const t=today();let n=0;DECK.forEach(c=>{const x=S.cards.find(y=>y.f===c[1]);if(x){if(x.a!==c[2]){x.a=c[2];n+=.001}return}
+ if(S.del[c[1]])return;if((c[3]||t)<=t){S.cards.push({s:c[0],f:c[1],a:c[2],b:1,n:t});S.newc=(S.newc||0)+1;n++}});if(n)save()}
+function render(){sync();ADJ=adjust();$("#v").innerHTML={today:vToday,plan:vPlan,cards:vCards,how:vHow}[tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab))}
 function grade(ok){const c=S.cards[rev.q[rev.i]];c.b=ok?Math.min(3,c.b+1):1;c.n=ymd(new Date(Date.now()+IV[c.b]*864e5));save();rev.i++;rev.show=false;if(rev.i>=rev.q.length)rev=null;render()}
 document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-day],[data-a],[data-del],[data-nav],[data-deck],[data-drop]");if(!t||t.disabled)return;const d=t.dataset;
- if(d.tab){tab=d.tab;rev=null;return render()}
- if(d.deck){DECK.filter(c=>(d.deck==="*"||c[0]===d.deck)&&!have(c)).forEach(c=>S.cards.push({s:c[0],f:c[1],a:c[2],b:1,n:today()}));save();return render()}
+ if(d.tab){if(tab==="cards"&&S.newc){S.newc=0;save()}tab=d.tab;rev=null;return render()}
+ if(d.deck){DECK.filter(c=>!have(c)&&!S.del[c[1]]).forEach(c=>S.cards.push({s:c[0],f:c[1],a:c[2],b:1,n:today()}));save();return render()}
  if(d.drop){S.drop[d.drop]=true;save();return render()}
  if(d.day){sel=d.day;tab="today";return render()}
  if(d.nav){sel=PLAN[+d.nav].d;return render()}
- if(d.del!==undefined){S.cards.splice(+d.del,1);save();return render()}
+ if(d.del!==undefined){S.del[S.cards[+d.del].f]=true;S.cards.splice(+d.del,1);save();return render()}
  const a=d.a;
  if(a==="now"){sel=clamp(today())}
  else if(a==="tm")return tmToggle();

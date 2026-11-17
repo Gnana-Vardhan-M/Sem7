@@ -14,3 +14,6 @@ Works offline once opened. Your ticks and flashcards are saved on your own devic
 
 ## Changing the plan
 Edit the `PLAN` list near the top of the script in `index.html`. If you change files after installing, bump `C='sem7-v1'` in `sw.js` to `sem7-v2`.
+
+## Updating flashcards
+Cards live in `cards.js` only. To add or change cards, replace just that one file in your repo (Add file > Upload files, same name). Each card is `["Subject","Question","Answer","YYYY-MM-DD"]`; the date is the plan day it should appear. Cards appear in the app automatically on that day, and your progress on existing cards is kept.
